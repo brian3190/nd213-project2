@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+//#define _GNU_SOURCE
 
 #include "linux_parser.h"
 
