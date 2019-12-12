@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+
 //#define _GNU_SOURCE
 
 #include "linux_parser.h"
@@ -37,13 +38,14 @@ string LinuxParser::OperatingSystem() {
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
-  string os, kernel;
+  string os, version, kernel;
   string line;
   std::ifstream stream(kProcDirectory + kVersionFilename);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
-    linestream >> os >> kernel;
+    linestream >> os >> version >> kernel;
+    return kernel;
   }
   kernel = "undefined"; //for errors
   return kernel;
@@ -72,22 +74,43 @@ vector<int> LinuxParser::Pids() {
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() { 
   string line, key, value;
-  std::ifstream stream(kProcDirectory + pid + kStatusFilename);
+  string total, free;
+  string cached, SReclaimable, Shmem;
+  string buffers;
+  long totalUsedMem, nonCacheBufferMem, cachedMem;
+  long _buffers;
+  long sumMemUtil;
+  float percentMemUtil;
+  std::ifstream stream(kProcDirectory + kMeminfoFilename); //System memUtil
   if(stream.is_open()){
     while(std::getline(stream, line)){   
       std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
       while(linestream >> key >> value){
-      	if(key == "VmSize"){
-          float value_ = std::stof(value);
-          string new_value = std::to_string(value_/1000);
-        	return std::stof(new_value);
+      	if(key == "MemTotal"){
+          total = value;
+        } else if(key == "MemFree"){
+          free = value;
+        } else if(key == "Buffers"){
+          buffers = value;
+        } else if(key == "Cached"){
+          cached = value;
+        } else if(key == "Shmem"){
+          Shmem = value;
+        } else if(key == "SReclaimable"){
+          SReclaimable = value;
         }
-      };
+      }
     }
+    _buffers = std::stol(buffers);
+    totalUsedMem = std::stol(total) - std::stol(free);
+    cachedMem = std::stol(cached) + std::stol(SReclaimable) - std::stol(Shmem);
+    nonCacheBufferMem = totalUsedMem - _buffers - cachedMem;
+    sumMemUtil = nonCacheBufferMem + _buffers + cachedMem;
+    percentMemUtil = ((float)sumMemUtil / std::stol(total) * 100.0); 
+    return percentMemUtil; //float but displayed as int
   }
-  float value_ = -1; //for errors
-  return value_;
+  return -1; //for errors
 }
 
 // TODO: Read and return the system uptime
@@ -100,12 +123,21 @@ long int LinuxParser::SysUpTime() {
     linestream >> uptime;
     return std::stol(uptime);
   }
-  long int uptime_ = -1; //if error
-  return uptime_;
+  return -1; //for errors
 }
 
 // TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long int LinuxParser::Jiffies() { 
+  string value; 
+  long int jiffies;
+  std::ifstream stream(kProcDirectory + "$$" + kStatFilename + " | cut -d \' \' -f 22");
+  if(stream.is_open()){
+    std::getline(stream, value);
+    jiffies = std::stol(value) * sysconf(_SC_CLK_TCK);
+    return jiffies; 
+  }
+  return -1; //ok
+}
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
@@ -170,8 +202,8 @@ int LinuxParser::RunningProcesses() {
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command() { 
   string line, cmd;
-  const std::string kProcDirectory {"/proc/"};
-  const std::string kCmdlineFilename {"/cmdline"};
+  //const std::string kProcDirectory {"/proc/"};
+  //const std::string kCmdlineFilename {"/cmdline"};
   std::ifstream stream(kProcDirectory + pid + kCmdlineFilename);
   if(stream.is_open()){
     std::getline(stream, line); 
@@ -185,7 +217,7 @@ string LinuxParser::Command() {
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Ram() { 
   string line, key, value;
-  std::ifstream stream(kProcDirectory + pid + kStatusFilename);
+  std::ifstream stream(kProcDirectory + pid + kStatusFilename); //process memoryUtil
   if(stream.is_open()){
     while(std::getline(stream, line)){   
       std::replace(line.begin(), line.end(), ':', ' ');

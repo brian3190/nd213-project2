@@ -13,9 +13,11 @@ using std::size_t;
 using std::string;
 using std::vector;
 
+Processor process; //--------Global Object--------//
+
 // TODO: Return the system's CPU
 Processor& System::Cpu() {
-  return Processor& ; 
+  return process; 
 }
 
 // TODO: Return a container composed of the system's processes
@@ -28,7 +30,7 @@ std::string System::Kernel() {
 
 // TODO: Return the system's memory utilization
 float System::MemoryUtilization() {
-    return LinuxParser::MemoryUtilization();
+  return LinuxParser::MemoryUtilization();
 }
 
 // TODO: Return the operating system name
