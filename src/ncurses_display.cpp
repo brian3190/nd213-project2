@@ -16,15 +16,19 @@ using std::to_string;
 std::string NCursesDisplay::ProgressBar(float percent) {
   std::string result{"0%"};
   int size{50};
-  float bars{percent * size};
+  float bars{percent / 2};
+
+  if (percent < 10. || percent == 100.)
+    result = std::to_string(percent).substr(0,3) + "%";
+  result = std::to_string(percent).substr(0,4) + "%";
 
   for (int i{0}; i < size; ++i) {
     result += i <= bars ? '|' : ' ';
   }
 
-  string display{to_string(percent * 100).substr(0, 4)};
-  if (percent < 0.1 || percent == 1.0)
-    display = " " + to_string(percent * 100).substr(0, 3);
+  string display{to_string(percent).substr(0, 4)};
+  if (percent / 100 < 0.1 || percent / 100 == 1.0)
+    display = " " + to_string(percent).substr(0, 3);
   return result + " " + display + "/100%";
 }
 

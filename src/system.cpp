@@ -13,11 +13,9 @@ using std::size_t;
 using std::string;
 using std::vector;
 
-Processor process; //--------Global Object--------//
-
 // TODO: Return the system's CPU
 Processor& System::Cpu() {
-  return process; 
+  return cpu_; 
 }
 
 // TODO: Return a container composed of the system's processes

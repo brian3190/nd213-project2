@@ -21,7 +21,13 @@ class System {
   // TODO: Define any necessary private members
  private:
   Processor cpu_ = {};
-  std::vector<Process> processes_ = {};
+  std::vector<Process> processes_ = {
+    //std::vector processes ;
+    //for(int i = 0; i < 10; i++){
+      //TODO
+    //}
+    //return processes;
+  };
 };
 
 #endif

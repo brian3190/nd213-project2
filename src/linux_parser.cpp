@@ -171,12 +171,12 @@ int LinuxParser::TotalProcesses() {
       std::istringstream linestream(line);
       while(linestream >> key >> value){
         if(key == "processes"){
-          return std::stoi(value) << '\n'; 
+          return std::stoi(value); 
         }
       }
     }
   }
-  int value_ = -1; //if error
+  int value_ = -1; //for errors
   return value_;
 }
 
@@ -194,7 +194,7 @@ int LinuxParser::RunningProcesses() {
       }
     }
   }
-  int value_ = -1; //if error
+  int value_ = -1; //for errors
   return value_;
 }
 
@@ -202,8 +202,6 @@ int LinuxParser::RunningProcesses() {
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command() { 
   string line, cmd;
-  //const std::string kProcDirectory {"/proc/"};
-  //const std::string kCmdlineFilename {"/cmdline"};
   std::ifstream stream(kProcDirectory + pid + kCmdlineFilename);
   if(stream.is_open()){
     std::getline(stream, line); 
@@ -238,27 +236,40 @@ string LinuxParser::Ram() {
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Uid() { 
-  return "ls";
+  string line, key, value;
+  std::ifstream stream(kProcDirectory + pid + kStatusFilename);
+  if(stream.is_open()){
+    while(std::getline(stream, line)){
+      std::replace(line.begin(), line.end(), ':', ' ');
+      std::istringstream linestream(line);
+      while(linestream >> key >> value){
+        if(key == "Uid"){
+          return value;
+        }
+      }
+    }
+  }
+  value = -1; // for errors
+  return value;
 }
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::User() { 
-  string line, key, value;
+  string line, key, value, uid;
   string pid = std::to_string((int)getpid());
-  std::ifstream stream(kProcDirectory + pid + kStatusFilename);
+  std::ifstream stream(kPasswordPath);
   if(stream.is_open()){
     while(std::getline(stream, line)){    
-      std::replace(line.begin(), line.end(), ':', ' ');
+      std::replace(line.begin(), line.end(), '=', ' ');
+      std::replace(line.begin(), line.end(), '(', ' ');
+      std::replace(line.begin(), line.end(), ',', ' ');
       std::istringstream linestream(line);
-      while(linestream >> key >> value){
-      	if(key == "Uid"){
-        	return value; 
-        }
-      }
+      linestream >> key >> value >> uid;
+        return uid; 
     }
   }
-  value = -1; //for error
+  value = "-1"; //for error
   return value; 
 }
 
