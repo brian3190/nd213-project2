@@ -20,14 +20,8 @@ class System {
 
   // TODO: Define any necessary private members
  private:
-  Processor cpu_ = {};
-  std::vector<Process> processes_ = {
-    //std::vector processes ;
-    //for(int i = 0; i < 10; i++){
-      //TODO
-    //}
-    //return processes;
-  };
+  Processor cpu_ = {}; //{<No data fields>}
+  std::vector<Process> processes_ = {};
 };
 
 #endif

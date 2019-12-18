@@ -19,7 +19,20 @@ Processor& System::Cpu() {
 }
 
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; } //TODO
+vector<Process>& System::Processes() {
+  std::vector<int> pid = LinuxParser::Pids();
+  for(unsigned i = 0; i < pid.size(); i++){
+    processes_.push_back(Process(pid[i]));
+  };
+  std::sort(processes_.begin(), processes_.end(), 
+    [](Process* a, Process* b) -> bool
+      { 
+        return (a->CpuUtilization()) < (b->CpuUtilization()); 
+      }
+  );
+  std::reverse(processes_.begin(), processes_.end());
+  return processes_;
+}
 
 // TODO: Return the system's kernel identifier (string)
 std::string System::Kernel() { 
