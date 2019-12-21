@@ -260,7 +260,7 @@ string LinuxParser::Ram(int pid) {
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid [[maybe_unused]](int pid) { 
+std::string LinuxParser::Uid(int pid){ 
   string line, key, x, value;
   string pid_ = std::to_string(pid);
   std::ifstream stream(kProcDirectory + pid_ + kStatusFilename);
@@ -275,15 +275,15 @@ string LinuxParser::Uid [[maybe_unused]](int pid) {
       }
     }
   }
-  key = "Error"; // for errors
-  return key;
+  value = "-1"; // for errors
+  return value;
 }
 
 // TODO: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::User(int pid) { 
   string line, key, x, value, uid;
-  string pid_ = std::to_string(pid);
+  string pid_ = LinuxParser::Uid(pid);
   std::ifstream stream(kPasswordPath);
   if(stream.is_open()){
     while(std::getline(stream, line)){    
@@ -293,7 +293,7 @@ string LinuxParser::User(int pid) {
       std::istringstream linestream(line);
       linestream >> key >> x >> value;
       // Returns key of Uid(value = 1000) as first (non-root) user. Change to Uid(value = 0) for root user.
-      if(value == "1000"){
+      if(value == pid_){
         return key;
       }
     }
